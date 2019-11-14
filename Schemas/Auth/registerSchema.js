@@ -7,8 +7,7 @@ const registerSchema = new Schema({
     type: String,
     unique: true,
     required: true,
-    trim: true,
-    dropDups: true
+    trim: true
   },
   username: {
     type: String,

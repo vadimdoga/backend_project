@@ -26,32 +26,45 @@ app.get('/', (req, res) => {
 });
 
 app.get('/stores', (req, res) => {
-  dbConnection.then(db => {
-    Store.find({})
-    .then(chat => {
-      res.json(chat)
+  if(req.session.userId){
+    dbConnection.then(db => {
+      Store.find({userId: req.session.userId})
+      .then(chat => {
+        res.json(chat)
+      })
+      .catch(err => {
+        console.log("An error ocurred: ", err)
+      })
     })
-    .catch(err => {
-      console.log("An error ocurred: ", err)
-    })
-  })
-
+  } else {
+    console.log("User is not connected.")
+    res.sendStatus(401)
+  }
 });
 
 app.post('/stores', (req, res) => {
-  dbConnection.then(db => {
-    let stores = Store(req.body)
-    console.log(stores)
-    stores.save(err => {
-      if(err === null){
-        console.log("Saved to db succesful")
-        res.sendStatus(200);
-      } else {
-        console.log("Error saving to db. " + err)
-        res.sendStatus(400)
-      }
-    })
-  })
+  if(req.body.storeName && req.body.storeEmail && req.body.storeAddress && req.body.storeImage){
+    req.body.userId = req.session.userId
+    if(req.session.userId){
+      console.log(req.session.userId)
+      dbConnection.then(db => {
+        let stores = Store(req.body)
+        console.log(stores)
+        stores.save(err => {
+          if(err === null){
+            console.log("Saved to db succesful")
+            res.sendStatus(200);
+          } else {
+            console.log("Error saving to db. " + err)
+            res.sendStatus(400)
+          }
+        })
+      })
+    } else {
+      console.log("User is not connected.")
+      res.sendStatus(401)
+    }
+  }
 });
 
 app.post('/auth/register', (req, res) => {
@@ -103,6 +116,18 @@ app.post('/auth/login', (req, res) => {
   } else {
     console.log("There is missing something in the form.")
     res.sendStatus(400)
+  }
+});
+
+app.get('/auth/logout', (req, res) => {
+  if(req.session) {
+    req.session.destroy(err => {
+      if(err){
+        console.log(err)
+      } else {
+        return res.redirect('/')
+      }
+    })
   }
 });
 

@@ -8,6 +8,9 @@ const cors = require('cors')
 const dbConnection = require('./dbConnection')
 const Store = require('./Schemas/storeSchema')
 const Register = require('./Schemas/Auth/registerSchema')
+//security
+const bcrypt = require('bcrypt')
+const saltRounds = 10
 
 app.use(session({
   secret: 'secretstuff',
@@ -53,8 +56,13 @@ app.post('/stores', (req, res) => {
 
 app.post('/auth/register', (req, res) => {
   if(req.body.email && req.body.username && req.body.password) {
+    const hash = bcrypt.hashSync(req.body.password, saltRounds)
     dbConnection.then(db => {
-        let registerData = Register(req.body)
+        let registerData = Register({
+          email: req.body.email,
+          username: req.body.username,
+          password: hash
+        })
         console.log(registerData)
         registerData.save(err => {
           if(err === null){
@@ -77,7 +85,8 @@ app.post('/auth/login', (req, res) => {
     dbConnection.then(db => {
       Register.findOne({email: req.body.email})
         .then(user => {
-          if(req.body.password == user.password){
+          const verifyPassword = bcrypt.compareSync(req.body.password, user.password)
+          if(verifyPassword){
             console.log("True password")
             req.session.userId = user._id
             res.sendStatus(200)

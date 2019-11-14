@@ -100,11 +100,11 @@ app.post('/auth/login', (req, res) => {
         .then(user => {
           const verifyPassword = bcrypt.compareSync(req.body.password, user.password)
           if(verifyPassword){
-            console.log("True password")
+            console.log("User connected succesfull.")
             req.session.userId = user._id
             res.sendStatus(200)
           } else {
-            console.log("False password")
+            console.log("Wrong password.")
             res.sendStatus(406);
           }
         })
@@ -129,6 +129,33 @@ app.get('/auth/logout', (req, res) => {
       }
     })
   }
+});
+
+app.post('/profile/update', (req, res) => {
+  if(req.body.username || req.body.password){
+    if(req.body.password){
+      req.body.password = bcrypt.hashSync(req.body.password, saltRounds)
+    }
+    dbConnection.then(db => {
+      Register.findById(req.session.userId)
+        .then(user => {
+          req.body.username ? user.username = req.body.username : null
+          req.body.password ? user.password = req.body.password : null
+          console.log(user)
+          user.save()
+            .then(() => {
+               res.json('Profile updated');
+            })
+        })
+        .catch(err => {
+          console.log("Couldn't find this id", err)
+          res.sendStatus(404)
+        })
+    })
+  } else {
+    console.log("Nothing has been introduced.")
+    res.sendStatus(404)
+  } 
 });
 
 app.listen(port, () => {

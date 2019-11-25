@@ -29,20 +29,15 @@ app.get("/", (req, res) => {
 });
 
 app.get("/stores", (req, res) => {
-  if (req.session.userId) {
-    dbConnection.then(db => {
-      Store.find({ userId: req.session.userId })
-        .then(store => {
-          res.json(store);
-        })
-        .catch(err => {
-          console.log("An error ocurred: ", err);
-        });
-    });
-  } else {
-    console.log("User is not connected.");
-    res.sendStatus(401);
-  }
+  dbConnection.then(db => {
+    Store.find({ userId: req.session.userId })
+      .then(store => {
+        res.json(store);
+      })
+      .catch(err => {
+        console.log("An error ocurred: ", err);
+      });
+  });
 });
 
 app.post("/stores", (req, res) => {
@@ -213,22 +208,18 @@ app.post("/products", (req, res) => {
   }
 });
 
-// app.get("/products", (req, res) => {
-//   if (req.session.userId) {
-//     dbConnection.then(db => {
-//       Store.find({ userId: req.session.userId })
-//         .then(store => {
-//           res.json(store);
-//         })
-//         .catch(err => {
-//           console.log("An error ocurred: ", err);
-//         });
-//     });
-//   } else {
-//     console.log("User is not connected.");
-//     res.sendStatus(401);
-//   }
-// });
+app.get("/products", (req, res) => {
+  dbConnection.then(db => {
+    Product.find()
+      .then(products => {
+        res.json(products);
+      })
+      .catch(err => {
+        console.log("An error ocurred: ", err);
+      });
+  });
+});
+
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);

@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 
 app.get("/stores", (req, res) => {
   dbConnection.then(db => {
-    Store.find({ userId: req.session.userId })
+    Store.find({})
       .then(store => {
         res.json(store);
       })
@@ -131,27 +131,38 @@ app.get("/auth/logout", (req, res) => {
       if (err) {
         console.log(err);
       } else {
+        console.log("User disconnected successful.")
         return res.redirect("/");
       }
     });
   }
 });
 
-app.post("/profile/update", (req, res) => {
+app.put("/profile/edit", (req, res) => {
   if (req.session.userId) {
     if (req.body.username || req.body.password) {
-      if (req.body.password) {
-        req.body.password = bcrypt.hashSync(req.body.password, saltRounds);
-      }
       dbConnection.then(db => {
         Register.findById(req.session.userId)
           .then(user => {
-            req.body.username ? (user.username = req.body.username) : null;
-            req.body.password ? (user.password = req.body.password) : null;
-            console.log(user);
-            user.save().then(() => {
-              res.json("Profile updated");
-            });
+            const verifyPassword = bcrypt.compareSync(
+              req.body.password,
+              user.password
+            );
+            if (verifyPassword && req.body.password) {
+              req.body.password = bcrypt.hashSync(req.body.password, saltRounds);
+            }
+            if(user.username !== req.body.username && verifyPassword === false){
+              req.body.username ? (user.username = req.body.username) : null;
+              req.body.password ? (user.password = req.body.password) : null;
+              console.log(user);
+              user.save()
+                .then(() => {
+                  res.json("Profile updated");
+                });
+            } else {
+              console.log("You need to introduce new data not the old one.")
+              res.sendStatus(406)
+            }
           })
           .catch(err => {
             console.log("Couldn't find this id", err);
@@ -220,6 +231,42 @@ app.get("/products", (req, res) => {
   });
 });
 
+app.delete('/products/:id', (req, res) => {
+  if(req.session.userId){
+    const requestId = req.params.id
+    const storeIds = []
+    dbConnection.then(db => {
+      Store.find({userId: req.session.userId})
+        .then(stores => {
+          stores.map(store => {
+            storeIds.push(store._id)
+          })
+
+          Product.findById(requestId)
+            .then(product => {
+              storeIds.map(store_id => {
+                if(store_id == product.storeId){
+                  Product.findByIdAndDelete(requestId)
+                  .then(err => {
+                    console.log("Error during deleting the product. ", err)
+                  })
+                  res.sendStatus(200)
+                } 
+              })
+            })
+            .catch(err => {
+              console.log("Could not find product")
+              res.sendStatus(404)
+            })
+        })
+        .catch(err => {
+          console.log("Could not find store")
+          res.sendStatus(404)
+        })
+      
+    })
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);

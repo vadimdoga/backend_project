@@ -11,8 +11,7 @@ const productSchema = new Schema({
   },
   productCategories: [{
     type: String,
-    required: true,
-    unique: true
+    required: true
   }],
   productImages: [{
     type: Buffer,

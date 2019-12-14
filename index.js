@@ -13,6 +13,12 @@ const Register = require("./Schemas/Auth/registerSchema");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+// const verifyPasswordStrength = (password) => {
+//   ch = password.charAt(0)
+//   console.log(ch)
+
+// }
+
 app.use(
   session({
     secret: "secretstuff",
@@ -72,28 +78,33 @@ app.post("/stores", (req, res) => {
 
 app.post("/auth/register", (req, res) => {
   if (req.body.email && req.body.username && req.body.password) {
-    const hash = bcrypt.hashSync(req.body.password, saltRounds);
-    dbConnection.then(db => {
-      let registerData = Register({
-        email: req.body.email,
-        username: req.body.username,
-        password: hash
+    // if(verifyPasswordStrength(req.body.password)){
+      const hash = bcrypt.hashSync(req.body.password, saltRounds);
+      dbConnection.then(db => {
+        let registerData = Register({
+          email: req.body.email,
+          username: req.body.username,
+          password: hash
+        });
+        console.log(registerData);
+        registerData.save(err => {
+          if (err === null) {
+            console.log("Saved to db successful");
+            res.sendStatus(200);
+          } else {
+            console.log("Error saving to db.", err.errmsg);
+            res.sendStatus(401);
+          }
+        });
       });
-      console.log(registerData);
-      registerData.save(err => {
-        if (err === null) {
-          console.log("Saved to db successful");
-          res.sendStatus(200);
-        } else {
-          console.log("Error saving to db.", err.errmsg);
-          res.sendStatus(401);
-        }
-      });
-    });
-  } else {
-    console.log("There is missing something in the form.");
-    res.sendStatus(400);
-  }
+    } else {
+      console.log("There is missing something in the form.");
+      res.sendStatus(400);
+    }
+  // } else {
+  //   console.log("Weak password")
+  //   res.sendStatus(406)
+  // }
 });
 
 app.post("/auth/login", (req, res) => {

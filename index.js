@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const session = require("express-session");
-const port = 3000;
+const port = 4000;
 const bodyParser = require("body-parser");
 const cors = require("cors");
 //mongo
@@ -13,11 +13,21 @@ const Register = require("./Schemas/Auth/registerSchema");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
-// const verifyPasswordStrength = (password) => {
-//   ch = password.charAt(0)
-//   console.log(ch)
-
-// }
+function verifyPasswordStrength(password){
+  let i = 0
+  while(i < password.length){
+    ch = password.charAt(i)
+    if(ch === ch.toUpperCase()){
+      if(password.length === 7){
+        return true
+      } else {
+        return false
+      }
+    }
+    i = i + 1
+  }
+  return false
+}
 
 app.use(
   session({
@@ -78,7 +88,7 @@ app.post("/stores", (req, res) => {
 
 app.post("/auth/register", (req, res) => {
   if (req.body.email && req.body.username && req.body.password) {
-    // if(verifyPasswordStrength(req.body.password)){
+    if(verifyPasswordStrength(req.body.password)){
       const hash = bcrypt.hashSync(req.body.password, saltRounds);
       dbConnection.then(db => {
         let registerData = Register({
@@ -98,13 +108,14 @@ app.post("/auth/register", (req, res) => {
         });
       });
     } else {
-      console.log("There is missing something in the form.");
-      res.sendStatus(400);
+      console.log("Weak password")
+      res.sendStatus(406)
     }
-  // } else {
-  //   console.log("Weak password")
-  //   res.sendStatus(406)
-  // }
+  } else {
+    console.log("There is missing something in the form.");
+    res.sendStatus(400);
+  }
+  
 });
 
 app.post("/auth/login", (req, res) => {

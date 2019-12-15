@@ -4,6 +4,7 @@ const session = require("express-session");
 const port = 4000;
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const fs = require('fs')
 //mongo
 const dbConnection = require("./dbConnection");
 const Store = require("./Schemas/storeSchema");
@@ -13,13 +14,29 @@ const Register = require("./Schemas/Auth/registerSchema");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+function readPasswordFile(path, password){
+  const commonPasswords = fs.readFileSync(path, 'utf8')
+  if(password === commonPasswords){
+    console.log("Password in common passwords!")
+    return false
+  } else {
+    console.log("Password not in common passwords!")
+    return true
+  }
+  
+}
 function verifyPasswordStrength(password){
   let i = 0
   while(i < password.length){
     ch = password.charAt(i)
     if(ch === ch.toUpperCase()){
       if(password.length === 7){
-        return true
+        verifyForCommonPasswords = readPasswordFile('10k-passwords.txt', password)
+        if(verifyForCommonPasswords){
+          return true
+        } else {
+          return false
+        }
       } else {
         return false
       }

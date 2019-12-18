@@ -9,13 +9,16 @@ const storeSchema = new Schema({
   },
   storeEmail:{
     type: String,
-    unique: true,
     required: true
   },
-  storeAddress: String,
+  storeAddress: {
+    type: String,
+    required: true
+  },
   storeImage: {
     data: Buffer,
-    contentType: String
+    contentType: String,
+    required: true
   },
   userId: String
 })

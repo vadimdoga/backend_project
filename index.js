@@ -4,6 +4,9 @@ const bodyParser = require("body-parser")
 const cors = require("cors")
 const mongoose = require("mongoose")
 const dotenv = require("dotenv")
+//Import Routes
+const authRoute = require("./routes/auth")
+const storeRoute = require('./routes/store')
 
 const port = 4000
 
@@ -20,16 +23,14 @@ mongoose.connect(
   () => console.log("Connected to DB")
 )
 
-//Import Routes
-const authRoute = require("./routes/auth")
-
 //Route middleware
 app.get('/', (req, res) => {
   res.send("hello world");
 });
 
-app.use("/user", authRoute)
+app.use("/users", authRoute)
 
+app.use("/stores", storeRoute)
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`)

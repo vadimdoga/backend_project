@@ -1,90 +1,85 @@
-const Store = require("./schemas/Store");
+const router = require("express").Router()
+const Store = require("../model/Store")
+const verifyToken = require("./verifyToken")
+const { createStoreValidation, editStoreValidation } = require("../validation")
 
-
-
-app.get("/stores", (req, res) => {
-  dbConnection.then(db => {
-    Store.find({})
-      .then(store => {
-        res.json(store);
-      })
-      .catch(err => {
-        console.log("An error ocurred: ", err);
-      });
-  });
-});
-
-
-app.post("/stores", (req, res) => {
-  
-  if (
-    req.body.storeName &&
-    req.body.storeEmail &&
-    req.body.storeAddress &&
-    req.body.storeImage
-  ) {
-    req.body.userId = req.session.userId;
-    console.log(req.session.userId);
-    dbConnection.then(db => {
-      let stores = Store(req.body);
-      console.log(stores);
-      stores.save(err => {
-        if (err === null) {
-          console.log("Saved to db succesful");
-          res.sendStatus(200);
-        } else {
-          console.log("Error saving to db. " + err);
-          res.sendStatus(400);
-        }
-      });
-    });
-  } else {
-    console.log("User is not connected.");
-    res.sendStatus(401);
-  }
-});
-
-app.put('/stores/:id', (req, res) => {
-  if(req.session.id){
-    if (
-      req.body.storeName ||
-      req.body.storeEmail ||
-      req.body.storeAddress ||
-      req.body.storeImage
-    ) {
-      Store.findOne({_id: req.params.id})
-        .then(store => {
-          if(
-            req.body.storeName !== store.storeName && 
-            req.body.storeEmail !== store.storeName &&
-            req.body.storeAddress !== store.storeAddress && 
-            req.body.storeImage !== store.storeImage
-          ){
-            req.body.storeName ? (store.storeName = req.body.storeName) : null;
-            req.body.storeEmail ? (store.storeEmail = req.body.storeEmail) : null;
-            req.body.storeAddress ? (store.storeAddress = req.body.storeAddress) : null;
-            req.body.storeImage ? (store.storeImage = req.body.storeImage) : null;
-            console.log(store)
-            store.save()
-              .then(() => {
-                res.json("Store updated");
-              })
-              .catch(err => {
-                console.log("Error saving to db", err)
-              })
-          } else {
-            console.log("You need to introduce new data not the old one.")
-            res.sendStatus(406)
-          }
-        })
-        .catch(err => {
-          console.log("Such store does not exist!", err)
-          res.sendStatus(404)
-        })
+router.get("/", async (req, res) => {
+  let storesToSend = []
+  const stores = await Store.find({})
+  if (stores === []) return res.status(404).send("No Stores!");
+  for (let i = 0; i < stores.length; i++) {
+    const storeData = {
+      "storeName": stores[i].storeName,
+      "storeAddress": stores[i].storeAddress,
+      "storeEmail": stores[i].storeEmail
     }
-  } else {
-    console.log("User is not connected.");
-    res.sendStatus(401);
+    storesToSend.push(storeData)
   }
-});
+  res.json(storesToSend)
+})
 
+router.post("/", verifyToken, async(req, res) => {
+  //data validation
+  const { error } = createStoreValidation(req.body)
+  if (error) return res.status(400).send(error.details[0].message)
+
+  //verify for coincidence storeName
+  const storeExist = await Store.findOne({storeName: req.body.storeName})
+  if (storeExist) return res.status(400).send("Store already exists!")
+  
+  //assign id 
+  req.body.userId = req.user._id
+  
+  //save store
+  const store = Store(req.body)
+  try {
+    const savedStore = await store.save()
+    res.send(savedStore);
+  } catch (error) {
+    res.status(400).send(error)
+  }
+})
+
+router.put("/:id", verifyToken, async(req, res) => {
+  const store = await Store.findOne({ _id: req.params.id })
+  //if store id is valid
+  if(!store) return res.status(400).send("Invalid store id!")
+  //if field are right validation
+  const { error } = editStoreValidation(req.body)
+  if (error) return res.status(400).send(error.details[0].message)
+  //if store field data have changed
+  if (
+    req.body.storeName !== store.storeName &&
+    req.body.storeEmail !== store.storeEmail &&
+    req.body.storeAddress !== store.storeAddress 
+  ) return res.status(406).send("No changes occurred!")
+  //if changed assign value to each field
+  req.body.storeName 
+    ? (store.storeName = req.body.storeName) 
+    : null
+  req.body.storeEmail
+    ? (store.storeEmail = req.body.storeEmail)
+    : null
+  req.body.storeAddress
+    ? (store.storeAddress = req.body.storeAddress)
+    : null
+  req.body.storeImage
+    ? (store.storeImage = req.body.storeImage)
+    : null
+
+  try {
+    const savedStore = await store.save()
+      res.json(savedStore);
+  } catch (error) {
+    res.status(400).send(error)
+  }
+})
+
+router.delete("/:id", verifyToken, async(req, res) => {
+  const store = await Store.findByIdAndRemove({_id: req.params.id})
+  //if store id is valid
+  if(!store) return res.status(400).send("Invalid store id!")
+
+})
+
+module.exports = router

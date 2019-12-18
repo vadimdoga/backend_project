@@ -223,6 +223,7 @@ app.get("/auth/logout", (req, res) => {
 
 app.put("/profile/edit", (req, res) => {
   if (req.session.userId) {
+    //todo: new password and old password
     if (req.body.username || req.body.password) {
       dbConnection.then(db => {
         Register.findById(req.session.userId)

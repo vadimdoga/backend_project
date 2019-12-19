@@ -6,7 +6,7 @@ const { createStoreValidation, editStoreValidation } = require("../validation")
 router.get("/", async (req, res) => {
   let storesToSend = []
   const stores = await Store.find({})
-  if (stores === []) return res.status(404).send("No Stores!");
+  if (stores.length === 0) return res.status(404).send("No Stores!");
   for (let i = 0; i < stores.length; i++) {
     const storeData = {
       "storeName": stores[i].storeName,
@@ -49,9 +49,9 @@ router.put("/:id", verifyToken, async(req, res) => {
   if (error) return res.status(400).send(error.details[0].message)
   //if store field data have changed
   if (
-    req.body.storeName !== store.storeName &&
-    req.body.storeEmail !== store.storeEmail &&
-    req.body.storeAddress !== store.storeAddress 
+    req.body.storeName === store.storeName ||
+    req.body.storeEmail === store.storeEmail ||
+    req.body.storeAddress === store.storeAddress 
   ) return res.status(406).send("No changes occurred!")
   //if changed assign value to each field
   req.body.storeName 
@@ -76,7 +76,7 @@ router.put("/:id", verifyToken, async(req, res) => {
 })
 
 router.delete("/:id", verifyToken, async(req, res) => {
-  const store = await Store.findByIdAndRemove({_id: req.params.id})
+  const store = await Store.findOneAndDelete({_id: req.params.id})
   //if store id is valid
   if(!store) return res.status(400).send("Invalid store id!")
 

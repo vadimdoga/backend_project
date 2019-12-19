@@ -4,10 +4,14 @@ const Schema = mongoose.Schema
 const productSchema = new Schema({
   productTitle: {
     type: String,
-    required: true
+    required: true,
+    min: 4,
+    max: 255
   },
   productDescription: {
-    type: String
+    type: String,
+    min: 6,
+    max: 1024
   },
   productCategories: [{
     type: String,
@@ -20,9 +24,13 @@ const productSchema = new Schema({
   }],
   productPrice: {
     type: Number,
-    required: true
+    required: true,
+    min: 1,
+    max: 100000000
   },
-  storeId: String
+  storeId: {
+    type: String
+  }
 })
 
 module.exports = mongoose.model("Product", productSchema)

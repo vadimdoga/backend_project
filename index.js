@@ -7,6 +7,7 @@ const dotenv = require("dotenv")
 //Import Routes
 const authRoute = require("./routes/auth")
 const storeRoute = require('./routes/store')
+const productRoute = require('./routes/product')
 
 const port = 4000
 
@@ -31,6 +32,8 @@ app.get('/', (req, res) => {
 app.use("/users", authRoute)
 
 app.use("/stores", storeRoute)
+
+app.use("/products", productRoute)
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`)

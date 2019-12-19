@@ -71,9 +71,53 @@ const editStoreValidation = data => {
   })
   return schema.validate(data)
 }
+//create product validation
+const createProductValidation = data => {
+  const schema = Joi.object({
+    productTitle: Joi.string()
+      .required()
+      .min(4)
+      .max(255),
+    productDescription: Joi.string()
+      .min(6)
+      .max(1024),
+    productCategories: Joi.array()
+      .required(),
+    productImages: Joi.array()
+      .required(),
+    productPrice: Joi.number()
+      .required()
+      .min(1)
+      .max(100000000),
+    storeName: Joi.string()
+      .required()
+  })
+  return schema.validate(data)
+}
+//edit Product validation
+const editProductValidation = data => {
+  const schema = Joi.object({
+    productTitle: Joi.string()
+      .min(4)
+      .max(255),
+    productDescription: Joi.string()
+      .min(6)
+      .max(1024),
+    productCategories: Joi.array(),
+    productImages: Joi.array(),
+    productPrice: Joi.number()
+      .min(1)
+      .max(100000000),
+    storeName: Joi.string()
+      .required()
+  })
+  return schema.validate(data)
+}
 
 
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
 module.exports.createStoreValidation = createStoreValidation
 module.exports.editStoreValidation = editStoreValidation
+module.exports.createProductValidation = createProductValidation
+module.exports.editProductValidation = editProductValidation

@@ -113,7 +113,21 @@ const editProductValidation = data => {
   })
   return schema.validate(data)
 }
-
+//edit profile validation
+const editProfileValidation = data => {
+  const schema = Joi.object({
+    username: Joi.string()
+      .min(2)
+      .max(255),
+    oldPassword: Joi.string()
+      .min(7)
+      .max(1024),
+    newPassword: Joi.string()
+      .min(7)
+      .max(1024)
+  })
+  return schema.validate(data)
+}
 
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
@@ -121,3 +135,4 @@ module.exports.createStoreValidation = createStoreValidation
 module.exports.editStoreValidation = editStoreValidation
 module.exports.createProductValidation = createProductValidation
 module.exports.editProductValidation = editProductValidation
+module.exports.editProfileValidation = editProfileValidation

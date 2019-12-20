@@ -21,10 +21,11 @@ function verifyPasswordStrength(password){
         return true
       } else {
         return false
-      }
+      } 
     }
     i = i + 1
   }
+  return false
 }
 
 module.exports = verifyPasswordStrength

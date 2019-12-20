@@ -8,6 +8,7 @@ const dotenv = require("dotenv")
 const authRoute = require("./routes/auth")
 const storeRoute = require('./routes/store')
 const productRoute = require('./routes/product')
+const profileRoute = require('./routes/profile')
 
 const port = 4000
 
@@ -34,6 +35,8 @@ app.use("/users", authRoute)
 app.use("/stores", storeRoute)
 
 app.use("/products", productRoute)
+
+app.use("/profile", profileRoute)
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`)

@@ -30,10 +30,6 @@ const registerSchema = new Schema({
     type: Boolean,
     required: true,
     default: false
-  },
-  temporaryToken: {
-    type: String,
-    required: true
   }
 })
 

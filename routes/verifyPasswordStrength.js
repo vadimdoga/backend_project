@@ -5,10 +5,7 @@ function readPasswordFile(path, password){
   if(password === commonPasswords){
     console.log("Password in common passwords!")
     return false
-  } else {
-    console.log("Password not in common passwords!")
-    return true
-  }
+  } else return true
   
 }
 function verifyPasswordStrength(password){

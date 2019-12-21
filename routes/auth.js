@@ -21,17 +21,15 @@ router.post("/register", async (req, res) => {
   const salt = await bcrypt.genSalt(10)
   const hashPassword = await bcrypt.hash(req.body.password, salt)
 
-  //temporary token assign
-  const temporaryToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_EMAIL, {
-    expiresIn: "1h"
-  })
-
   const user = User({
     email: req.body.email,
     username: req.body.username,
     password: hashPassword
   })
 
+  //generate temporary token 
+  const temporaryToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_EMAIL, { expiresIn: "1h" })
+  
   try {
     const registeredUser = await user.save()
     emailConfirm(req.body.email, temporaryToken)
@@ -42,17 +40,28 @@ router.post("/register", async (req, res) => {
 })
 
 router.post("/login", async (req, res) => {
-  //todo: verify if account active
   //data validation
   const { error } = loginValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
-  //find email
+  //fin user in db
   const user = await User.findOne({ email: req.body.email })
+  //verify if account active
+  if (!user.active){
+     //resend confirmation mail
+    if (req.query.resend === true){
+      //generate temporary token 
+      const temporaryToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_EMAIL, { expiresIn: "1h" })
+      
+      emailConfirm(user.email, temporaryToken)
+      return res.send("Confirmation Mail sent!");
+    } else return res.status(400).send("Account not Activated. Check your mail and follow the link!")
+  }
+  //find email
   if (!user) return res.status(400).send("Invalid Email!")
-
+  
   const verifyPassword = await bcrypt.compare(req.body.password, user.password)
   if (!verifyPassword) return res.status(400).send("Invalid Password!")
-
+ 
   //create and assign a token
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
     expiresIn: "1d"
@@ -67,25 +76,27 @@ router.get("/logout", verifyToken, (req, res) => {
   res.redirect("/")
 })
 
-router.get('/confirm', async(req, res) => {
+router.get("/confirm", async (req, res) => {
   const token = req.query.confirmToken
-  if(!token) return res.status(401).send('No Token!')
+  if (!token) return res.status(401).send("No Token!")
   //verify token
   try {
     const verified = jwt.verify(token, process.env.TOKEN_SECRET_EMAIL)
     req.user = verified
   } catch (err) {
-    res.status(400).send('Invalid Token!')
+    res.status(400).send("Invalid Token!")
   }
   //find user and make account active
-  const userExist = await User.findOne({_id: req.user})
+  const userExist = await User.findOne({ _id: req.user })
+  if (userExist.active) res.status(400).send("Account already confirmed!")
   userExist.active = true
 
   try {
     await userExist.save()
-    res.send("Account Confirmed Successfuly!");
+    res.send("Account Confirmed Successfuly!")
   } catch (error) {
     res.status(400).send(error)
   }
-});
+})
+
 module.exports = router

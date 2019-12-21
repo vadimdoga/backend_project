@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken")
 const verifyToken = require("./verifyToken")
 const verifyPasswordStrength = require("./verifyPasswordStrength")
 const { registerValidation, loginValidation } = require("../validation")
+const { emailConfirm } = require("./sendMail")
 
 router.post("/register", async (req, res) => {
   //data validation
@@ -20,14 +21,21 @@ router.post("/register", async (req, res) => {
   const salt = await bcrypt.genSalt(10)
   const hashPassword = await bcrypt.hash(req.body.password, salt)
 
-  const registerUser = User({
+  const user = User({
     email: req.body.email,
     username: req.body.username,
     password: hashPassword
   })
 
+  //temporary token assign
+  const temporaryToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
+    expiresIn: "1h"
+  })
+  user.temporaryToken = temporaryToken
+
   try {
-    const registeredUser = await registerUser.save()
+    const registeredUser = await user.save()
+    emailConfirm(req.body.email)
     res.send(registeredUser)
   } catch (error) {
     res.status(400).send(error)
@@ -46,15 +54,17 @@ router.post("/login", async (req, res) => {
   if (!verifyPassword) return res.status(400).send("Invalid Password!")
 
   //create and assign a token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {expiresIn: '1h'})
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
+    expiresIn: "1d"
+  })
   res.header("auth-token", token)
 
   res.send("Logged in!")
 })
 
 router.get("/logout", verifyToken, (req, res) => {
-  res.removeHeader('auth-token')
-  res.redirect('/');
+  res.removeHeader("auth-token")
+  res.redirect("/")
 })
 
 module.exports = router

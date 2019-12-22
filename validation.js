@@ -15,7 +15,10 @@ const registerValidation = data => {
     password: Joi.string()
       .required()
       .min(7)
-      .max(1024)
+      .max(1024),
+    question: Joi.string()
+      .required()
+      .min(1)
   })
   return schema.validate(data)
 }

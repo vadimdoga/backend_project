@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 
-const emailConfirm = async(emailTo, token) => {
+const accountMailConfirm = async(emailTo, token) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -13,7 +13,6 @@ const emailConfirm = async(emailTo, token) => {
     from: 'Fake Etsy Store',
     to: emailTo,
     subject: 'Account Confirmation',
-    // html: "<p>To Confirm your account, follow this link: </p><a>http://localhost:4000/user/confirm?token=" + token + "</a>"
     text: "To Confirm your account, follow this link: http://localhost:4000/user/confirm?confirmToken=" + token
   }
 
@@ -24,4 +23,4 @@ const emailConfirm = async(emailTo, token) => {
   }
 }
 
-module.exports.emailConfirm = emailConfirm
+module.exports.accountMailConfirm = accountMailConfirm

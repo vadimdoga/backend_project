@@ -30,6 +30,11 @@ const registerSchema = new Schema({
     type: Boolean,
     required: true,
     default: false
+  },
+  question: {
+    type: String,
+    required: true,
+    min: 1
   }
 })
 

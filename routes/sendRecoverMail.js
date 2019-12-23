@@ -13,7 +13,7 @@ const recoverMailConfirm = async(emailTo, token) => {
     from: 'Fake Etsy Store',
     to: emailTo,
     subject: 'Recover Password',
-    text: "To recover your Password, follow this link: http://localhost:4000/user/recover?confirmToken=" + token
+    text: "To recover your Password, follow this link: http://localhost:4000/user/recover/password?confirmToken=" + token
   }
 
   try {

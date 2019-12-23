@@ -4,7 +4,7 @@ const User = require("../model/User")
 const jwt = require("jsonwebtoken")
 const verifyToken = require("./verifyToken")
 const verifyPasswordStrength = require("./verifyPasswordStrength")
-const { registerValidation, loginValidation } = require("../validation")
+const { registerValidation, loginValidation, recoverPasswordValidation } = require("../validation")
 const { accountMailConfirm } = require("./sendAccountMail")
 const { recoverMailConfirm } = require("./sendRecoverMail")
 
@@ -21,12 +21,14 @@ router.post("/register", async (req, res) => {
   //hash password
   const salt = await bcrypt.genSalt(10)
   const hashPassword = await bcrypt.hash(req.body.password, salt)
+  //hash question
+  const hashQuestion = await bcrypt.hash(req.body.question, salt)
 
   const user = User({
     email: req.body.email,
     username: req.body.username,
     password: hashPassword,
-    question: req.body.question
+    question: hashQuestion
   })
 
   //generate temporary token 
@@ -106,20 +108,28 @@ router.post('/recover', async(req, res) => {
   //verify email and question
   const emailExist = await User.findOne({email: req.body.email})
   if (!emailExist) return res.status(400).send("Invalid Email!")
-  const verifyQuestion = emailExist.question === req.body.question
+  if (!emailExist.active) return res.status(400).send("Account not active!")
+  //verify with hash
+  const verifyQuestion = await bcrypt.compare(req.body.question, emailExist.question)
   if (!verifyQuestion) return res.status(400).send("Invalid Question!")
 
-  //generate temporary password
-  const tempPassword = Math.random().toString(36).slice(-8).toUpperCase()
-  console.log(tempPassword)
   //generate temporary token 
-  const temporaryToken = jwt.sign({ id: emailExist._id, tempPassword: tempPassword }, process.env.TOKEN_SECRET_RECOVER, { expiresIn: "1h" })
+  const temporaryToken = jwt.sign({ id: emailExist._id }, process.env.TOKEN_SECRET_RECOVER, { expiresIn: "1h" })
 
   recoverMailConfirm(emailExist.email, temporaryToken)
   res.send("Email sent!");
 })
 
-router.get('/recover', async(req, res) => {
+router.post('/recover/password', async(req, res) => {
+  //password validation
+  const { error } = recoverPasswordValidation(req.body)
+  if (error) return res.status(400).send(error.details[0].message)
+
+  //verify for password weakness
+  if (!verifyPasswordStrength(req.body.password))
+    return res.status(400).send("Weak Password!")
+
+  //token validation
   const token = req.query.confirmToken
   if (!token) return res.status(401).send("No Token!")
   //verify token
@@ -132,11 +142,21 @@ router.get('/recover', async(req, res) => {
   
   //find user
   const userExist = await User.findOne({_id: req.user.id})
-  userExist.password = req.user.tempPassword
+  if (!userExist) return res.status(400).send("No such user!")
+
+  //verify password with current in the db
+  const verifyPassword = await bcrypt.compare(
+    req.body.password,
+    userExist.password
+  )
+  if (verifyPassword) return res.status(400).send("Introduce another password!")
+
+  //assign new password
+  userExist.password = req.body.password
   try {
     await userExist.save()
-    res.header("auth-token", token)
-    res.send("Temporary password saved!");
+    res.send("New password saved!");
+    //todo: redirect frontend
   } catch (error) {
     res.status(400).send(error)
   }

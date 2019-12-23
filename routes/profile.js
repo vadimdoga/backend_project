@@ -17,7 +17,7 @@ router.put("/edit", verifyToken, async (req, res) => {
 
   if (req.body.username) {
     //verify for password weakness
-    if (!verifyPasswordStrength(req.body.newPassword.toLowerCase()))
+    if (!verifyPasswordStrength(req.body.newPassword))
       return res.status(400).send("Weak Password!")
     if (userExist.username.toLowerCase() === req.body.username.toLowerCase())
       return res.status(400).send("Type another username!")

@@ -11,7 +11,8 @@ router.get("/", async (req, res) => {
     const storeData = {
       "storeName": stores[i].storeName,
       "storeAddress": stores[i].storeAddress,
-      "storeEmail": stores[i].storeEmail
+      "storeEmail": stores[i].storeEmail,
+      "storeImage": stores[i].storeImage
     }
     storesToSend.push(storeData)
   }
@@ -29,7 +30,7 @@ router.post("/", verifyToken, async(req, res) => {
   
   //assign id 
   req.body.userId = req.user._id
-  
+
   //save store
   const store = Store(req.body)
   try {

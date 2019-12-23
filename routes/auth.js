@@ -151,8 +151,11 @@ router.post('/recover/password', async(req, res) => {
   )
   if (verifyPassword) return res.status(400).send("Introduce another password!")
 
+  //hash and salt password
+  const salt = await bcrypt.genSalt(10)
+  const hashPassword = await bcrypt.hash(req.body.password, salt)
   //assign new password
-  userExist.password = req.body.password
+  userExist.password = hashPassword
   try {
     await userExist.save()
     res.send("New password saved!");

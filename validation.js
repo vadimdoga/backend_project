@@ -53,7 +53,7 @@ const createStoreValidation = data => {
       .required()
       .min(6)
       .max(255),
-    storeImage: Joi.binary()
+    storeImage: Joi.object().required()
   })
   return schema.validate(data)
 }

@@ -22,7 +22,7 @@ const storeSchema = new Schema({
     max: 255
   },
   storeImage: {
-    data: Buffer,
+    data: String,
     contentType: String
   },
   userId: String

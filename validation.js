@@ -70,7 +70,7 @@ const editStoreValidation = data => {
     storeAddress: Joi.string()
       .min(6)
       .max(255),
-    storeImage: Joi.binary()
+    storeImage: Joi.object()
   })
   return schema.validate(data)
 }

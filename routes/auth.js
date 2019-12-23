@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
      //resend confirmation mail
     if (req.query.resend === true){
       //generate temporary token 
-      const temporaryToken = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET_EMAIL, { expiresIn: "1h" })
+      const temporaryToken = jwt.sign({ id: user._id }, process.env.TOKEN_SECRET_EMAIL, { expiresIn: "1h" })
       
       accountMailConfirm(user.email, temporaryToken)
       return res.send("Confirmation Mail sent!");
@@ -67,7 +67,7 @@ router.post("/login", async (req, res) => {
   if (!verifyPassword) return res.status(400).send("Invalid Password!")
  
   //create and assign a token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
+  const token = jwt.sign({ id: user._id }, process.env.TOKEN_SECRET, {
     expiresIn: "1d"
   })
   res.header("auth-token", token)

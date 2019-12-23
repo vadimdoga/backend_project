@@ -41,8 +41,8 @@ router.post("/", verifyToken, async(req, res) => {
   }
 })
 
-router.put("/", verifyToken, async(req, res) => {
-  const store = await Store.findOne({ _id: req.user })
+router.put("/:id", verifyToken, async(req, res) => {
+  const store = await Store.findOne({ _id: req.params.id })
   //if store id is valid
   if(!store) return res.status(400).send("Invalid store id!")
   //if field are right validation
@@ -76,8 +76,8 @@ router.put("/", verifyToken, async(req, res) => {
   }
 })
 
-router.delete("/", verifyToken, async(req, res) => {
-  const store = await Store.findOneAndDelete({_id: req.user})
+router.delete("/:id", verifyToken, async(req, res) => {
+  const store = await Store.findOneAndDelete({_id: req.params.id})
   //if store id is valid
   if(!store) return res.status(400).send("Invalid store id!")
 

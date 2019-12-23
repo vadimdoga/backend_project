@@ -15,7 +15,7 @@ const port = 4000
 dotenv.config()
 
 //Middlewares
-app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: "50mb" }))
 app.use(cors())
 
 //Connect DB

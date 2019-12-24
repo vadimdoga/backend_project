@@ -13,9 +13,11 @@ router.get("/", async (req, res) => {
   if (products.length === 0) return res.status(404).send("No products!")
   for (let i = 0; i < products.length; i++) {
     const productData = {
-      storeName: stores[i].storeName,
-      storeAddress: stores[i].storeAddress,
-      storeEmail: stores[i].storeEmail
+      productTitle: products[i].productTitle,
+      productDescription: products[i].productDescription,
+      productCategories: products[i].productCategories,
+      productPrice: products[i].productPrice,
+      productImages: products[i].productImages,
     }
     productsToSend.push(productData)
   }
@@ -28,7 +30,7 @@ router.post("/", verifyToken, async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message)
   //find store by user id and store name
   const store = await Store.findOne({
-    userId: req.user._id,
+    userId: req.user.id,
     storeName: req.body.storeName
   })
   if (!store) return res.status(400).send("Invalid Store Name")
@@ -44,16 +46,16 @@ router.post("/", verifyToken, async (req, res) => {
   }
 })
 
-router.put("/", verifyToken, async (req, res) => {
-  const product = await Product.findOne({ _id: req.user })
+router.put("/:id", verifyToken, async (req, res) => {
+  const product = await Product.findOne({ _id: req.params.id })
   //if product id is valid
   if (!product) return res.status(400).send("Invalid product id!")
   //if store exists
   const store = await Store.findOne({
-    userId: req.user._id,
-    storeName: req.body.storeName
+    _id: product.storeId,
   })
   if (!store) return res.status(400).send("Invalid Store Name!")
+  if (store.userId !== req.user.id) return res.status(400).send("You do not have rights!");
   //if field are right validation
   const { error } = editProductValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
@@ -89,8 +91,8 @@ router.put("/", verifyToken, async (req, res) => {
   }
 })
 
-router.delete("/", verifyToken, async(req, res) => {
-  const product = await Product.findOneAndDelete({_id: req.user})
+router.delete("/:id", verifyToken, async(req, res) => {
+  const product = await Product.findOneAndDelete({_id: req.params.id})
   //if store id is valid
   if(!product) return res.status(400).send("Invalid store id!")
 

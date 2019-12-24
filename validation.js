@@ -110,9 +110,7 @@ const editProductValidation = data => {
     productImages: Joi.array(),
     productPrice: Joi.number()
       .min(1)
-      .max(100000000),
-    storeName: Joi.string()
-      .required()
+      .max(100000000)
   })
   return schema.validate(data)
 }

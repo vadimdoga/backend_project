@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 const Schema = mongoose.Schema
 mongoose.set("useCreateIndex", true)
 
-const registerSchema = new Schema({
+const userSchema = new Schema({
   email: {
     type: String,
     unique: true,
@@ -38,4 +38,4 @@ const registerSchema = new Schema({
   }
 })
 
-module.exports = mongoose.model("Register", registerSchema)
+module.exports = mongoose.model("User", userSchema)

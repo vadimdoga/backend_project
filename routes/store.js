@@ -45,6 +45,7 @@ router.put("/:id", verifyToken, async(req, res) => {
   const store = await Store.findOne({ _id: req.params.id })
   //if store id is valid
   if(!store) return res.status(400).send("Invalid store id!")
+  if(req.user.id !== store.userId) return res.status(400).send("You do not have rights!");
   //if field are right validation
   const { error } = editStoreValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)

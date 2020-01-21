@@ -161,8 +161,7 @@ router.post('/recover/password', async(req, res) => {
   userExist.password = hashPassword
   try {
     await userExist.save()
-    res.send("New password saved!");
-    res.redirect('/');
+    res.redirect("/").send("New password saved!");
   } catch (error) {
     res.status(400).send(error)
   }

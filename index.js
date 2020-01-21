@@ -49,5 +49,5 @@ app.use("/profile", profileRoute)
 const server = https.createServer(options, app);
 
 server.listen(PORT, () => {
-  console.log(`Server started on port ${port}`)
+  console.log(`Server started on port ${PORT}`)
 })

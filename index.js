@@ -11,7 +11,7 @@ const authRoute = require("./routes/auth")
 const storeRoute = require("./routes/store")
 const productRoute = require("./routes/product")
 const profileRoute = require("./routes/profile")
-const port = 4000
+const PORT = process.env.PORT || 4000
 
 const key = fs.readFileSync('certs/selfsigned.key', 'utf-8');
 const cert = fs.readFileSync('certs/selfsigned.crt', 'utf-8');
@@ -48,6 +48,6 @@ app.use("/profile", profileRoute)
 
 const server = https.createServer(options, app);
 
-server.listen(port, () => {
+server.listen(PORT, () => {
   console.log(`Server started on port ${port}`)
 })

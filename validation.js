@@ -139,6 +139,21 @@ const recoverPasswordValidation = data => {
   })
   return schema.validate(data)
 }
+//recover validation
+const recoverValidation = data => {
+  const schema = Joi.object({
+    email: Joi.string()
+      .required()
+      .email()
+      .min(6)
+      .max(255),
+    question: Joi.string()
+      .required()
+      .min(1)
+  })
+  return schema.validate(data)
+}
+
 module.exports.registerValidation = registerValidation
 module.exports.loginValidation = loginValidation
 module.exports.createStoreValidation = createStoreValidation
@@ -147,3 +162,4 @@ module.exports.createProductValidation = createProductValidation
 module.exports.editProductValidation = editProductValidation
 module.exports.editProfileValidation = editProfileValidation
 module.exports.recoverPasswordValidation = recoverPasswordValidation
+module.exports.recoverValidation = recoverValidation

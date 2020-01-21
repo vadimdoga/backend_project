@@ -1,5 +1,6 @@
 const router = require("express").Router()
 const Store = require("../model/Store")
+const Product = require("../model/Product")
 const verifyToken = require("./verifyToken")
 const { createStoreValidation, editStoreValidation } = require("../validation")
 
@@ -9,6 +10,7 @@ router.get("/", async (req, res) => {
   if (stores.length === 0) return res.status(404).send("No Stores!");
   for (let i = 0; i < stores.length; i++) {
     const storeData = {
+      "storeID": stores[i]._id,
       "storeName": stores[i].storeName,
       "storeAddress": stores[i].storeAddress,
       "storeEmail": stores[i].storeEmail,
@@ -29,7 +31,7 @@ router.post("/", verifyToken, async(req, res) => {
   if (storeExist) return res.status(400).send("Store already exists!")
   
   //assign id 
-  req.body.userId = req.user._id
+  req.body.userId = req.user.id
 
   //save store
   const store = Store(req.body)
@@ -49,6 +51,9 @@ router.put("/:id", verifyToken, async(req, res) => {
   //if field are right validation
   const { error } = editStoreValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
+  //if such storeName exists or not
+  const storeName = await Store.findOne({storeName: req.body.storeName})
+  if(storeName) return res.status(400).send("Such storeName already exists!");
   //if store field data have changed
   if (
     req.body.storeName === store.storeName ||
@@ -78,10 +83,16 @@ router.put("/:id", verifyToken, async(req, res) => {
 })
 
 router.delete("/:id", verifyToken, async(req, res) => {
-  const store = await Store.findOneAndDelete({_id: req.params.id})
-  //if store id is valid
+
+  const store = await Store.find({_id: req.params.id})
   if(!store) return res.status(400).send("Invalid store id!")
 
+  const products = await Product.find({storeName: store.storeName})
+  //check if there are products. If not you can delete the store
+  if(products.length === 0){
+    const store = await Store.findOneAndDelete({_id: req.params.id})
+    if(store) return res.status(200).send("Store deleted");
+  } else return res.status(400).send("You can't delete the store untill you have products.");
 })
 
 module.exports = router

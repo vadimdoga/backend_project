@@ -13,6 +13,7 @@ router.get("/", async (req, res) => {
   if (products.length === 0) return res.status(404).send("No products!")
   for (let i = 0; i < products.length; i++) {
     const productData = {
+      productID: products[i]._id,
       productTitle: products[i].productTitle,
       productDescription: products[i].productDescription,
       productCategories: products[i].productCategories,
@@ -28,7 +29,7 @@ router.post("/", verifyToken, async (req, res) => {
   //if field are right validation
   const { error } = createProductValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
-  //find store by user id and store name
+  //find store by user id and store name  
   const store = await Store.findOne({
     userId: req.user.id,
     storeName: req.body.storeName
@@ -95,7 +96,8 @@ router.delete("/:id", verifyToken, async(req, res) => {
   const product = await Product.findOneAndDelete({_id: req.params.id})
   //if store id is valid
   if(!product) return res.status(400).send("Invalid store id!")
-
+  
+  res.status(200).send("Product deleted!");
 })
 
 module.exports = router

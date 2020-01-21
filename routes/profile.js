@@ -6,8 +6,9 @@ const { editProfileValidation } = require("../validation")
 const verifyPasswordStrength = require("./verifyPasswordStrength")
 
 router.put("/edit", verifyToken, async (req, res) => {
-  if (!req.body.username && !req.body.oldPassword)
-    return res.status(400).send("Invalid fields!")
+  //todo: make a good validation of data -> or username or old password with new password
+  // if (!req.body.username && !req.body.oldPassword)
+  //   return res.status(400).send("Invalid fields!")
 
   const { error } = editProfileValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)

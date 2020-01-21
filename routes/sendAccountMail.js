@@ -13,7 +13,7 @@ const accountMailConfirm = async(emailTo, token) => {
     from: 'Fake Etsy Store',
     to: emailTo,
     subject: 'Account Confirmation',
-    text: "To Confirm your account, follow this link: http://localhost:4000/user/confirm?confirmToken=" + token
+    text: "To Confirm your account, follow this link: https://localhost:4000/user/confirm?confirmToken=" + token
   }
 
   try {

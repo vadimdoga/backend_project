@@ -4,7 +4,7 @@ const User = require("../model/User")
 const jwt = require("jsonwebtoken")
 const verifyToken = require("./verifyToken")
 const verifyPasswordStrength = require("./verifyPasswordStrength")
-const { registerValidation, loginValidation, recoverPasswordValidation } = require("../validation")
+const { registerValidation, loginValidation, recoverPasswordValidation, recoverValidation } = require("../validation")
 const { accountMailConfirm } = require("./sendAccountMail")
 const { recoverMailConfirm } = require("./sendRecoverMail")
 
@@ -49,10 +49,11 @@ router.post("/login", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message)
   //fin user in db
   const user = await User.findOne({ email: req.body.email })
+  if (!user) return res.status(400).send("No such email!")
   //verify if account active
   if (!user.active){
      //resend confirmation mail
-    if (req.query.resend === true){
+     if (req.query.resend === "true"){
       //generate temporary token 
       const temporaryToken = jwt.sign({ id: user._id }, process.env.TOKEN_SECRET_EMAIL, { expiresIn: "1h" })
       
@@ -86,7 +87,7 @@ router.get("/confirm", async (req, res) => {
   //verify token
   try {
     const verified = jwt.verify(token, process.env.TOKEN_SECRET_EMAIL)
-    req.user = verified
+    req.user = verified.id
   } catch (err) {
     res.status(400).send("Invalid Token!")
   }
@@ -104,7 +105,9 @@ router.get("/confirm", async (req, res) => {
 })
 
 router.post('/recover', async(req, res) => {
-  if (!(req.body.email && req.body.question)) return res.status(400).send("Invalid Fields!")
+  //data validation
+  const { error } = recoverValidation(req.body)
+  if (error) return res.status(400).send(error.details[0].message)
   //verify email and question
   const emailExist = await User.findOne({email: req.body.email})
   if (!emailExist) return res.status(400).send("Invalid Email!")
@@ -159,7 +162,7 @@ router.post('/recover/password', async(req, res) => {
   try {
     await userExist.save()
     res.send("New password saved!");
-    //todo: redirect frontend
+    res.redirect('/');
   } catch (error) {
     res.status(400).send(error)
   }

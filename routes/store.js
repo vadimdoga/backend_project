@@ -32,6 +32,7 @@ router.post("/", verifyToken, async(req, res) => {
   
   //assign id 
   req.body.userId = req.user.id
+  if (!req.body.userId) return res.status(400).send("No user ID!");
 
   //save store
   const store = Store(req.body)
@@ -76,7 +77,7 @@ router.put("/:id", verifyToken, async(req, res) => {
 
   try {
     const savedStore = await store.save()
-      res.json(savedStore);
+    res.json(savedStore);
   } catch (error) {
     res.status(400).send(error)
   }

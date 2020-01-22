@@ -25,7 +25,10 @@ const storeSchema = new Schema({
     data: String,
     contentType: String
   },
-  userId: String
+  userId: {
+    type: String,
+    required: true
+  }
 })
 
 module.exports = mongoose.model("Store", storeSchema)

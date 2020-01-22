@@ -37,6 +37,8 @@ router.post("/", verifyToken, async (req, res) => {
   if (!store) return res.status(400).send("Invalid Store Name")
   //set store id in Product
   req.body.storeId = store._id
+  if (!req.body.storeId) return res.status(400).send("No user ID!");
+
   const product = new Product(req.body)
   //save product
   try {

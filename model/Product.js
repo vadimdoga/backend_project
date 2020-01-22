@@ -28,7 +28,8 @@ const productSchema = new Schema({
     max: 100000000
   },
   storeId: {
-    type: String
+    type: String,
+    required: true
   }
 })
 

@@ -22,10 +22,10 @@ router.get("/", async (req, res) => {
 })
 
 router.post("/", verifyToken, async(req, res) => {
+  
   //data validation
   const { error } = createStoreValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
-
   //verify for coincidence storeName
   const storeExist = await Store.findOne({storeName: req.body.storeName})
   if (storeExist) return res.status(400).send("Store already exists!")

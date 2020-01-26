@@ -8,6 +8,15 @@ const { registerValidation, loginValidation, recoverPasswordValidation, recoverV
 const { accountMailConfirm } = require("./sendAccountMail")
 const { recoverMailConfirm } = require("./sendRecoverMail")
 
+router.get('/', verifyToken, async(req, res) => {
+  const user = await User.find({_id: req.user.id})
+  const userData = {
+    username: user[0].username,
+    email: user[0].email
+  }
+  res.json(userData)
+});
+
 router.post("/register", async (req, res) => {
   //data validation
   const { error } = registerValidation(req.body)
@@ -69,11 +78,11 @@ router.post("/login", async (req, res) => {
  
   //create and assign a token
   const token = jwt.sign({ id: user._id }, process.env.TOKEN_SECRET, {
-    expiresIn: "1d"
+    expiresIn: "4h"
   })
-  res.header("auth-token", token)
+  res.send(token)
 
-  res.send("Logged in!")
+  // res.send("Logged in!")
 })
 
 router.get("/logout", verifyToken, (req, res) => {
@@ -87,12 +96,14 @@ router.get("/confirm", async (req, res) => {
   //verify token
   try {
     const verified = jwt.verify(token, process.env.TOKEN_SECRET_EMAIL)
-    req.user = verified.id
+    console.log(verified)
+    req.user = verified._id
   } catch (err) {
     res.status(400).send("Invalid Token!")
   }
   //find user and make account active
   const userExist = await User.findOne({ _id: req.user })
+  console.log(userExist)
   if (userExist.active) return res.status(400).send("Account already confirmed!")
   userExist.active = true
 
@@ -127,11 +138,11 @@ router.post('/recover/password', async(req, res) => {
   //password validation
   const { error } = recoverPasswordValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
-
+  
   //verify for password weakness
   if (!verifyPasswordStrength(req.body.password))
-    return res.status(400).send("Weak Password!")
-
+  return res.status(400).send("Weak Password!")
+  
   //token validation
   const token = req.query.confirmToken
   if (!token) return res.status(401).send("No Token!")
@@ -161,7 +172,7 @@ router.post('/recover/password', async(req, res) => {
   userExist.password = hashPassword
   try {
     await userExist.save()
-    res.redirect("/").send("New password saved!");
+    res.send("New password saved!");
   } catch (error) {
     res.status(400).send(error)
   }

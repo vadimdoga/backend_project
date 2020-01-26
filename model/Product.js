@@ -13,10 +13,10 @@ const productSchema = new Schema({
     min: 6,
     max: 1024
   },
-  productCategories: [{
+  productCategories: {
     type: String,
     required: true
-  }],
+  },
   productImages: [{
     data: String,
     contentType: String

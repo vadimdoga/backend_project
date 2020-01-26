@@ -84,7 +84,7 @@ const createProductValidation = data => {
     productDescription: Joi.string()
       .min(6)
       .max(1024),
-    productCategories: Joi.array()
+    productCategories: Joi.string()
       .required(),
     productImages: Joi.array()
       .required(),
@@ -106,7 +106,7 @@ const editProductValidation = data => {
     productDescription: Joi.string()
       .min(6)
       .max(1024),
-    productCategories: Joi.array(),
+    productCategories: Joi.string(),
     productImages: Joi.array(),
     productPrice: Joi.number()
       .min(1)

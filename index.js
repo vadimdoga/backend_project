@@ -6,6 +6,8 @@ const cors = require("cors")
 const mongoose = require("mongoose")
 const dotenv = require("dotenv")
 const fs = require("fs")
+const cookieParser = require('cookie-parser');
+
 //Import Routes
 const authRoute = require("./routes/auth")
 const storeRoute = require("./routes/store")
@@ -25,6 +27,7 @@ dotenv.config()
 //Middlewares
 app.use(bodyParser.json({ limit: "50mb" }))
 app.use(cors())
+app.use(cookieParser())
 
 //Connect DB
 mongoose.connect(

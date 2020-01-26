@@ -7,15 +7,16 @@ const verifyPasswordStrength = require("./verifyPasswordStrength")
 
 router.put("/edit", verifyToken, async (req, res) => {
   if (!req.body.username && !req.body.oldPassword)
-    return res.status(400).send("Invalid fields!")
+  return res.status(400).send("Invalid fields!")
 
   const { error } = editProfileValidation(req.body)
   if (error) return res.status(400).send(error.details[0].message)
 
-  const userExist = await User.findOne({ _id: req.user })
+  const userExist = await User.findOne({ _id: req.user.id })
   if (!userExist) return res.status(400).send("No such user!")
 
   if (req.body.username) {
+
     //verify for password weakness
     if (!verifyPasswordStrength(req.body.newPassword))
       return res.status(400).send("Weak Password!")
@@ -25,6 +26,7 @@ router.put("/edit", verifyToken, async (req, res) => {
     userExist.username = req.body.username
   }
   if (req.body.oldPassword && req.body.newPassword) {
+
     //verify old password with current in the db
     const verifyOldPassword = await bcrypt.compare(
       req.body.oldPassword,
@@ -43,7 +45,9 @@ router.put("/edit", verifyToken, async (req, res) => {
   }
   //save user to db
   try {
+
     const savedUser = await userExist.save()
+
     res.send(savedUser)
   } catch (error) {
     res.status(400).send(error)
